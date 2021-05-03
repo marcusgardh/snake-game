@@ -1,12 +1,23 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import "./GameBoard.css";
 import Square from "./GameBoard.model";
 
 const GameBoard: React.FC = () => {
-  let rows: Square[][] = [];
+  const [grid, setGrid] = useState<Square[][]>([]);
   const numberOfColumnsAndRows: number = 8;
 
-  function createGameBoard() {
+  const [playerRow, setPlayerRow] = useState(0);
+  const [playerCol, setPlayerCol] = useState(0);
+
+  let circle: { row: number; col: number } = {
+    row:
+      playerRow > numberOfColumnsAndRows ? numberOfColumnsAndRows : playerRow,
+    col:
+      playerCol > numberOfColumnsAndRows ? numberOfColumnsAndRows : playerCol,
+  };
+
+  useMemo(() => {
+    let rows: Square[][] = [];
     for (let i: number = 0; i < numberOfColumnsAndRows; i++) {
       let column: Square[] = [];
 
@@ -25,53 +36,83 @@ const GameBoard: React.FC = () => {
       }
       rows.push(column);
     }
-  }
+    setGrid(rows);
+  }, []);
 
-  createGameBoard();
+  function handleMovement(x: number, y: number): void {
+    let playerMoved: boolean = false;
 
-  const [playerRow, setPlayerRow] = useState(0);
-  const [playerCol, setPlayerCol] = useState(0);
-
-  let circle: { row: number; col: number } = {
-    row:
-      playerRow > numberOfColumnsAndRows ? numberOfColumnsAndRows : playerRow,
-    col:
-      playerCol > numberOfColumnsAndRows ? numberOfColumnsAndRows : playerCol,
-  };
-
-  function handleMovement(x: number, y: number) {
-    // console.group();
-    // console.log(`Spelaren vill till ${x}, ${y}`);
-    // console.log(`Spelaren är på ${playerRow}, ${playerCol}`);
-    // console.log(playerRow === x && (playerCol === y + 1 || y - 1));
-    // console.log(playerCol === y && (playerRow === x + 1 || x - 1));
-    // console.groupEnd();
-
-    if (playerRow === x && (playerCol === y + +1 || playerCol === y - 1)) {
+    if (
+      playerRow === x &&
+      (playerCol === y + +1 || playerCol === y - 1) &&
+      !grid[x][y].hasObstacle
+    ) {
       setPlayerCol(y);
+      playerMoved = true;
     } else if (
       playerCol === y &&
-      (playerRow === x + +1 || playerRow === x - 1)
+      (playerRow === x + +1 || playerRow === x - 1) &&
+      !grid[x][y].hasObstacle
     ) {
       setPlayerRow(x);
+      playerMoved = true;
     }
+
+    playerMoved && addObstacle();
+  }
+
+  function addObstacle(): void {
+    let obstacleAdded: boolean = false;
+    while (!obstacleAdded) {
+      let x: number = Math.floor(Math.random() * numberOfColumnsAndRows);
+      let y: number = Math.floor(Math.random() * numberOfColumnsAndRows);
+      let square: Square = grid[x][y];
+
+      if (square.hasObstacle || (x === circle.row && circle.col)) {
+        continue;
+      } else {
+        grid[x][y] = { ...square, hasObstacle: true };
+        obstacleAdded = true;
+      }
+    }
+  }
+
+  function isAdjacent(x: number, y: number): boolean {
+    let adjacent: boolean = false;
+    if (
+      playerRow === x &&
+      (playerCol === y + +1 || playerCol === y - 1) &&
+      !grid[x][y].hasObstacle
+    ) {
+      adjacent = true;
+    } else if (
+      playerCol === y &&
+      (playerRow === x + +1 || playerRow === x - 1) &&
+      !grid[x][y].hasObstacle
+    ) {
+      adjacent = true;
+    }
+    return adjacent;
   }
 
   return (
     <>
       <div className="container">
-        {rows.map((column, index) => (
+        {grid.map((column, index) => (
           <div key={index} className="column">
             {column.map((square) => (
               <div
                 key={square.rowPosition + square.colPosition}
-                className={`cube ${square.color}`}
+                className={`cube ${square.color} ${
+                  isAdjacent(square.rowPosition, square.colPosition) && "green"
+                }`}
                 onClick={() =>
                   handleMovement(square.rowPosition, square.colPosition)
                 }
               >
-                {square.colPosition === circle.col &&
-                  square.rowPosition === circle.row && (
+                {square.hasObstacle && <div className="obstacle" />}
+                {square.rowPosition === circle.row &&
+                  square.colPosition === circle.col && (
                     <div className="circle" />
                   )}
               </div>
@@ -79,18 +120,6 @@ const GameBoard: React.FC = () => {
           </div>
         ))}
       </div>
-      {/* <div>
-        <input
-          type="number"
-          value={playerCol}
-          onChange={(e) => handleMovement(e, true)}
-        />
-        <input
-          type="number"
-          value={playerRow}
-          onChange={(e) => handleMovement(e, false)}
-        />
-      </div> */}
     </>
   );
 };

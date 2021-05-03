@@ -31,3 +31,13 @@
   height: 70px;
   border-radius: 9999px;
 }
+
+.obstacle {
+  background-color: #f00;
+  width: 70px;
+  height: 70px;
+}
+
+.green {
+  background-color: #0f0;
+}

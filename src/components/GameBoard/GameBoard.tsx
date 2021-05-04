@@ -1,8 +1,12 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Square } from "./GameBoard.model";
 import "./GameBoard.css";
-import Square from "./GameBoard.model";
 
-const GameBoard: React.FC = () => {
+export interface BoardProps {
+  score(): void;
+}
+
+const GameBoard: React.FC<BoardProps> = ({ score }) => {
   const [grid, setGrid] = useState<Square[][]>([]);
   const [obstacles, setObstacles] = useState<{ x: number; y: number }[]>([]);
   const numberOfColumnsAndRows: number = 8;
@@ -21,7 +25,7 @@ const GameBoard: React.FC = () => {
       playerCol > numberOfColumnsAndRows ? numberOfColumnsAndRows : playerCol,
   };
 
-  useMemo(() => {
+  useEffect(() => {
     let rows: Square[][] = [];
     for (let i: number = 0; i < numberOfColumnsAndRows; i++) {
       let column: Square[] = [];
@@ -35,7 +39,6 @@ const GameBoard: React.FC = () => {
               ? "gray"
               : "white",
           hasObstacle: { yes: false, removed: 0 },
-          playerCanMove: false,
         };
         column.push(square);
       }
@@ -63,10 +66,11 @@ const GameBoard: React.FC = () => {
       playerMoved = true;
     }
 
-    playerMoved && addObstacle();
+    playerMoved && score();
+    playerMoved && addObstacle(x, y);
   }
 
-  function addObstacle(): void {
+  function addObstacle(playerX: number, playerY: number): void {
     let obstacleAdded: boolean = false;
 
     let obstacleArray: { x: number; y: number }[] = obstacles;
@@ -115,7 +119,10 @@ const GameBoard: React.FC = () => {
       let y: number = Math.floor(Math.random() * numberOfColumnsAndRows);
       square = grid[x][y];
 
-      if (square.hasObstacle.yes || (x === circle.row && y === circle.col)) {
+      if (
+        square.hasObstacle.yes ||
+        (square.rowPosition === playerX && square.colPosition === playerY)
+      ) {
         continue;
       } else {
         grid[x][y] = { ...square, hasObstacle: { yes: true, removed: 0 } };

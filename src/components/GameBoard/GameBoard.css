@@ -50,12 +50,15 @@
   animation: blinker 2s linear infinite;
 }
 
+.green {
+  background-color: rgb(106, 192, 106);
+  cursor: pointer;
+
+  animation: blinker 2s linear infinite;
+}
+
 @keyframes blinker {
   50% {
     opacity: 0.25;
   }
-}
-
-.green {
-  background-color: rgb(106, 192, 106);
 }

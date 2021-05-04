@@ -38,6 +38,24 @@
   height: 70px;
 }
 
+#removed-1 {
+  animation: blinker 0.7s linear infinite;
+}
+
+#removed-2 {
+  animation: blinker 1.2s linear infinite;
+}
+
+#removed-3 {
+  animation: blinker 2s linear infinite;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0.25;
+  }
+}
+
 .green {
-  background-color: #0f0;
+  background-color: rgb(106, 192, 106);
 }

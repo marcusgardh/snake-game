@@ -3,10 +3,16 @@ import { Square } from "./GameBoard.model";
 import "./GameBoard.css";
 
 export interface BoardProps {
-  score(): void;
+  numberOfObstacles: number;
+  tailLength: number;
+  updateScore(): void;
 }
 
-const GameBoard: React.FC<BoardProps> = ({ score }) => {
+const GameBoard: React.FC<BoardProps> = ({
+  numberOfObstacles,
+  tailLength,
+  updateScore,
+}) => {
   const [grid, setGrid] = useState<Square[][]>([]);
   const [obstacles, setObstacles] = useState<{ x: number; y: number }[]>([]);
   const numberOfColumnsAndRows: number = 8;
@@ -25,6 +31,8 @@ const GameBoard: React.FC<BoardProps> = ({ score }) => {
       playerCol > numberOfColumnsAndRows ? numberOfColumnsAndRows : playerCol,
   };
 
+  const [tail, setTail] = useState<{ row: number; col: number }[]>([]);
+
   useEffect(() => {
     let rows: Square[][] = [];
     for (let i: number = 0; i < numberOfColumnsAndRows; i++) {
@@ -39,6 +47,7 @@ const GameBoard: React.FC<BoardProps> = ({ score }) => {
               ? "gray"
               : "white",
           hasObstacle: { yes: false, removed: 0 },
+          hasTail: false,
         };
         column.push(square);
       }
@@ -53,21 +62,50 @@ const GameBoard: React.FC<BoardProps> = ({ score }) => {
     if (
       playerRow === x &&
       (playerCol === y + +1 || playerCol === y - 1) &&
-      !grid[x][y].hasObstacle.yes
+      !grid[x][y].hasObstacle.yes &&
+      !grid[x][y].hasTail
     ) {
       setPlayerCol(y);
       playerMoved = true;
     } else if (
       playerCol === y &&
       (playerRow === x + +1 || playerRow === x - 1) &&
-      !grid[x][y].hasObstacle.yes
+      !grid[x][y].hasObstacle.yes &&
+      !grid[x][y].hasTail
     ) {
       setPlayerRow(x);
       playerMoved = true;
     }
 
-    playerMoved && score();
+    playerMoved && handleTail(playerRow, playerCol);
+    playerMoved && updateScore();
     playerMoved && addObstacle(x, y);
+
+    console.log(grid);
+  }
+
+  function handleTail(x: number, y: number) {
+    tail.length < tailLength && tail.push({ row: x, col: y });
+
+    for (let i: number = tail.length - 1; i >= 0; i--) {
+      if (i > 0) {
+        tail[i] = { row: tail[i - 1].row, col: tail[i - 1].col };
+      }
+    }
+    tail[0] = { row: x, col: y };
+
+    for (let i: number = 0; i < numberOfColumnsAndRows; i++) {
+      for (let u: number = 0; u < numberOfColumnsAndRows; u++) {
+        let square: Square = grid[i][u];
+
+        grid[i][u] = { ...square, hasTail: false };
+      }
+    }
+
+    for (let u: number = 0; u < tail.length; u++) {
+      let square: Square = grid[tail[u].row][tail[u].col];
+      grid[tail[u].row][tail[u].col] = { ...square, hasTail: true };
+    }
   }
 
   function addObstacle(playerX: number, playerY: number): void {
@@ -77,8 +115,8 @@ const GameBoard: React.FC<BoardProps> = ({ score }) => {
 
     let square: Square =
       obstacleArray[0] && grid[obstacleArray[0].x][obstacleArray[0].y];
-    if (obstacleArray.length >= 17) {
-      if (obstacleArray.length >= 20) {
+    if (obstacleArray.length >= numberOfObstacles - 3) {
+      if (obstacleArray.length >= numberOfObstacles) {
         grid[obstacleArray[0].x][obstacleArray[0].y] = {
           ...square,
           hasObstacle: { yes: false, removed: 0 },
@@ -93,7 +131,7 @@ const GameBoard: React.FC<BoardProps> = ({ score }) => {
         hasObstacle: { yes: true, removed: 3 },
       };
 
-      if (obstacleArray.length >= 18) {
+      if (obstacleArray.length >= numberOfObstacles - 2) {
         square = grid[obstacleArray[1].x][obstacleArray[1].y];
 
         grid[obstacleArray[1].x][obstacleArray[1].y] = {
@@ -102,7 +140,7 @@ const GameBoard: React.FC<BoardProps> = ({ score }) => {
         };
       }
 
-      if (obstacleArray.length >= 19) {
+      if (obstacleArray.length >= numberOfObstacles - 1) {
         square = grid[obstacleArray[0].x][obstacleArray[0].y];
 
         grid[obstacleArray[0].x][obstacleArray[0].y] = {
@@ -121,7 +159,8 @@ const GameBoard: React.FC<BoardProps> = ({ score }) => {
 
       if (
         square.hasObstacle.yes ||
-        (square.rowPosition === playerX && square.colPosition === playerY)
+        (square.rowPosition === playerX && square.colPosition === playerY) ||
+        square.hasTail
       ) {
         continue;
       } else {
@@ -141,13 +180,15 @@ const GameBoard: React.FC<BoardProps> = ({ score }) => {
     if (
       playerRow === x &&
       (playerCol === y + +1 || playerCol === y - 1) &&
-      !grid[x][y].hasObstacle.yes
+      !grid[x][y].hasObstacle.yes &&
+      !grid[x][y].hasTail
     ) {
       adjacent = true;
     } else if (
       playerCol === y &&
       (playerRow === x + +1 || playerRow === x - 1) &&
-      !grid[x][y].hasObstacle.yes
+      !grid[x][y].hasObstacle.yes &&
+      !grid[x][y].hasTail
     ) {
       adjacent = true;
     }
@@ -178,6 +219,16 @@ const GameBoard: React.FC<BoardProps> = ({ score }) => {
                     }
                     className="obstacle"
                   />
+                )}
+                {tail.map(
+                  (tail) =>
+                    tail.row === square.rowPosition &&
+                    tail.col === square.colPosition && (
+                      <div
+                        key={`${tail.row}${tail.col}`}
+                        className="tail blue"
+                      />
+                    )
                 )}
                 {square.rowPosition === circle.row &&
                   square.colPosition === circle.col && (

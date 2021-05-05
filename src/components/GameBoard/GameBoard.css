@@ -32,11 +32,22 @@
   border-radius: 9999px;
 }
 
+.tail {
+  background-color: #f00;
+  width: 30px;
+  height: 30px;
+  border-radius: 9999px;
+}
+
 .obstacle {
   background-color: #f00;
   width: 70px;
   height: 70px;
 }
+
+/* .blue {
+  background-color: #00f;
+} */
 
 #removed-1 {
   animation: blinker 0.7s linear infinite;

@@ -5,12 +5,16 @@ import "./GameBoard.css";
 export interface BoardProps {
   numberOfObstacles: number;
   tailLength: number;
+  gameStarted(bool: boolean): void;
+  gameOver(bool: boolean): void;
   updateScore(): void;
 }
 
 const GameBoard: React.FC<BoardProps> = ({
   numberOfObstacles,
   tailLength,
+  gameStarted,
+  gameOver,
   updateScore,
 }) => {
   const [grid, setGrid] = useState<Square[][]>([]);
@@ -48,6 +52,7 @@ const GameBoard: React.FC<BoardProps> = ({
               : "white",
           hasObstacle: { yes: false, removed: 0 },
           hasTail: false,
+          isMovable: false,
         };
         column.push(square);
       }
@@ -58,6 +63,8 @@ const GameBoard: React.FC<BoardProps> = ({
 
   function handleMovement(x: number, y: number): void {
     let playerMoved: boolean = false;
+
+    gameStarted(true);
 
     if (
       playerRow === x &&
@@ -81,7 +88,22 @@ const GameBoard: React.FC<BoardProps> = ({
     playerMoved && updateScore();
     playerMoved && addObstacle(x, y);
 
-    console.log(grid);
+    playerMoved && checkGameOver(x, y);
+  }
+
+  function checkGameOver(x: number, y: number) {
+    if (
+      (x + +1 > numberOfColumnsAndRows - 1 ||
+        grid[x + +1][y].hasObstacle.yes ||
+        grid[x + +1][y].hasTail) &&
+      (x - 1 < 0 || grid[x - 1][y].hasObstacle.yes || grid[x - 1][y].hasTail) &&
+      (y + +1 > numberOfColumnsAndRows - 1 ||
+        grid[x][y + +1].hasObstacle.yes ||
+        grid[x][y + +1].hasTail) &&
+      (y - 1 < 0 || grid[x][y - 1].hasObstacle.yes || grid[x][y - 1].hasTail)
+    ) {
+      gameOver(true);
+    }
   }
 
   function handleTail(x: number, y: number) {
@@ -192,12 +214,13 @@ const GameBoard: React.FC<BoardProps> = ({
     ) {
       adjacent = true;
     }
+
     return adjacent;
   }
 
   return (
     <>
-      <div className="container">
+      <div className="board-container">
         {grid.map((column, index) => (
           <div key={index} className="column">
             {column.map((square) => (

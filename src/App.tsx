@@ -6,6 +6,8 @@ import Score from "./components/Score/Score";
 
 const App: React.FC = () => {
   const [numberOfObstacles, setObstacles] = useState(8);
+  const [gameOver, setGameOver] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
   const [tail, setTail] = useState(7);
   const [score, setScore] = useState(0);
 
@@ -27,21 +29,49 @@ const App: React.FC = () => {
     }
   }
 
+  function updateGameStarted(bool: boolean) {
+    setGameStarted(bool);
+  }
+
+  function updateGameOver(bool: boolean) {
+    if (bool) {
+      setGameOver(true);
+    } else {
+      setScore(0);
+      setGameStarted(false);
+      setGameOver(false);
+    }
+  }
+
   function updateScore() {
     setScore(score + +1);
   }
 
   return (
     <div className="container">
-      <div className="score-area">
-        <Score score={score} />
-        <Difficulty updateDifficulty={updateDifficulty} />
+      <div className={`${gameOver && "gameover-tint"}`}>
+        <div className="score-area">
+          <Score score={score} />
+          <Difficulty
+            disabled={gameStarted}
+            updateDifficulty={updateDifficulty}
+          />
+        </div>
+        <GameBoard
+          gameStarted={updateGameStarted}
+          gameOver={updateGameOver}
+          numberOfObstacles={numberOfObstacles}
+          tailLength={tail}
+          updateScore={updateScore}
+        />
       </div>
-      <GameBoard
-        numberOfObstacles={numberOfObstacles}
-        tailLength={tail}
-        updateScore={updateScore}
-      />
+      {gameOver && (
+        <div className="gameover-area">
+          <h1>Game Over!</h1>
+          <p>You got {score} points!</p>
+          <button onClick={() => updateGameOver(false)}>Restart</button>
+        </div>
+      )}
     </div>
   );
 };

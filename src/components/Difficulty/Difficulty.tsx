@@ -2,13 +2,18 @@ import React from "react";
 
 export interface DifficultyProps {
   updateDifficulty(x: number): void;
+  disabled: boolean;
 }
 
-const Difficulty: React.FC<DifficultyProps> = ({ updateDifficulty }) => {
+const Difficulty: React.FC<DifficultyProps> = ({
+  disabled,
+  updateDifficulty,
+}) => {
   return (
     <div>
       <label htmlFor="difficuly">Difficulty</label>
       <select
+        disabled={disabled}
         id="difficulty"
         name="difficulty"
         onChange={(e) => updateDifficulty(parseInt(e.target.value))}

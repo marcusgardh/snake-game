@@ -117,7 +117,6 @@ const GameBoard: React.FC<BoardProps> = ({
     for (let i: number = 0; i < grid.length; i++) {
       for (let u: number = 0; u < grid[i].length; u++) {
         let square: Square = grid[i][u];
-        console.log("grid");
 
         grid[i][u] = {
           ...square,

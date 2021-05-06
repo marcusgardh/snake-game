@@ -6,7 +6,7 @@ export interface BoardProps {
   numberOfObstacles: number;
   tailLength: number;
   gameStarted(bool: boolean): void;
-  gameOver(bool: boolean): void;
+  setGameOver(bool: boolean): void;
   updateScore(): void;
 }
 
@@ -14,7 +14,7 @@ const GameBoard: React.FC<BoardProps> = ({
   numberOfObstacles,
   tailLength,
   gameStarted,
-  gameOver,
+  setGameOver,
   updateScore,
 }) => {
   const [grid, setGrid] = useState<Square[][]>([]);
@@ -102,7 +102,29 @@ const GameBoard: React.FC<BoardProps> = ({
         grid[x][y + +1].hasTail) &&
       (y - 1 < 0 || grid[x][y - 1].hasObstacle.yes || grid[x][y - 1].hasTail)
     ) {
-      gameOver(true);
+      setGameOver(true);
+      restartGame();
+    }
+  }
+
+  function restartGame() {
+    setTail([]);
+    setPlayerRow(Math.floor(Math.random() * numberOfColumnsAndRows));
+    setPlayerCol(Math.floor(Math.random() * numberOfColumnsAndRows));
+
+    setObstacles([]);
+
+    for (let i: number = 0; i < grid.length; i++) {
+      for (let u: number = 0; u < grid[i].length; u++) {
+        let square: Square = grid[i][u];
+        console.log("grid");
+
+        grid[i][u] = {
+          ...square,
+          hasObstacle: { yes: false, removed: 0 },
+          hasTail: false,
+        };
+      }
     }
   }
 
@@ -137,6 +159,7 @@ const GameBoard: React.FC<BoardProps> = ({
 
     let square: Square =
       obstacleArray[0] && grid[obstacleArray[0].x][obstacleArray[0].y];
+
     if (obstacleArray.length >= numberOfObstacles - 3) {
       if (obstacleArray.length >= numberOfObstacles) {
         grid[obstacleArray[0].x][obstacleArray[0].y] = {

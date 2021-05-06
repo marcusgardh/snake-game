@@ -5,7 +5,7 @@ import GameBoard from "./components/GameBoard/GameBoard";
 import Score from "./components/Score/Score";
 
 const App: React.FC = () => {
-  const [numberOfObstacles, setObstacles] = useState(8);
+  const [numberOfObstacles, setObstacles] = useState(20);
   const [gameOver, setGameOver] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [tail, setTail] = useState(7);
@@ -47,6 +47,10 @@ const App: React.FC = () => {
     setScore(score + +1);
   }
 
+  function restart() {
+    updateGameOver(false);
+  }
+
   return (
     <div className="container">
       <div className={`${gameOver && "gameover-tint"}`}>
@@ -59,7 +63,7 @@ const App: React.FC = () => {
         </div>
         <GameBoard
           gameStarted={updateGameStarted}
-          gameOver={updateGameOver}
+          setGameOver={updateGameOver}
           numberOfObstacles={numberOfObstacles}
           tailLength={tail}
           updateScore={updateScore}
@@ -69,7 +73,7 @@ const App: React.FC = () => {
         <div className="gameover-area">
           <h1>Game Over!</h1>
           <p>You got {score} points!</p>
-          <button onClick={() => updateGameOver(false)}>Restart</button>
+          <button onClick={restart}>Restart</button>
         </div>
       )}
     </div>
